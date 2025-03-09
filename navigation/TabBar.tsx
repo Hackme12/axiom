@@ -1,16 +1,16 @@
-import { View, Platform } from 'react-native';
-import { useLinkBuilder, useTheme } from '@react-navigation/native';
-import { Text, PlatformPressable } from '@react-navigation/elements';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
+import { View, Text, StyleSheet } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { PlatformPressable } from '@react-navigation/elements';
+import Feather from 'react-native-vector-icons/Feather';
+
+type TabWithIconProps = {
+  name: string;
+  isFocused: boolean;
+};
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
-  const { colors } = useTheme();
-  const { buildHref } = useLinkBuilder();
-
   return (
-    <View style={{ flexDirection: 'row' }}>
+    <View style={styles.tabBar}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
@@ -43,19 +43,62 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
 
         return (
           <PlatformPressable
-            href={buildHref(route.name, route.params)}
+            key={route.key}
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
             testID={options.tabBarButtonTestID}
             onPress={onPress}
             onLongPress={onLongPress}
-            style={{ flex: 1 }}>
-            <Text style={{ color: isFocused ? colors.primary : colors.text }}>{label}</Text>
+            style={[styles.tabItem]}>
+            <TabWithIcon name={route.name} isFocused={true} />
+            {!isFocused && (
+              <Text style={[styles.label, { color: !isFocused ? '#800080' : '#000000' }]}>
+                {label}
+              </Text>
+            )}
           </PlatformPressable>
         );
       })}
     </View>
   );
 };
+
+const TabWithIcon = ({ name, isFocused }: TabWithIconProps) => {
+  const iconName = name.toLowerCase();
+  if (iconName === 'account') {
+    return <Feather name="user" size={24} color={isFocused ? 'blue' : '#000000'} />;
+  }
+  return <Feather name={iconName} size={24} color={isFocused ? 'blue' : '#000000'} />;
+};
+
+// Styles
+const styles = StyleSheet.create({
+  tabBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 30,
+    backgroundColor: '#ffffff',
+    //backgroundColor: '#ABB8E170',
+    marginHorizontal: 70,
+    paddingVertical: 5,
+    borderRadius: 35,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+  },
+  tabItem: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 5,
+  },
+
+  label: {
+    fontSize: 10,
+    fontFamily: 'sans-serif',
+  },
+});
 
 export default TabBar;
